@@ -1,0 +1,8 @@
+const FloatingDrawer_vue_vue_type_style_index_0_scoped_2e6edde6_lang = ".animate-slide-in-right[data-v-2e6edde6]{animation:slideInRight-2e6edde6 .3s cubic-bezier(.16,1,.3,1) forwards}@keyframes slideInRight-2e6edde6{0%{opacity:0;transform:translate(100%)}to{opacity:1;transform:translate(0)}}";
+
+const FloatingDrawerStyles_BEE7LzpP = [
+  FloatingDrawer_vue_vue_type_style_index_0_scoped_2e6edde6_lang
+];
+
+export { FloatingDrawerStyles_BEE7LzpP as default };
+//# sourceMappingURL=FloatingDrawer-styles.BEE7LzpP.mjs.map

@@ -1,0 +1,54 @@
+import type { Config } from 'tailwindcss'
+
+export default <Config>{
+  content: [
+    './components/**/*.{js,vue,ts}',
+    './layouts/**/*.vue',
+    './pages/**/*.vue',
+    './composables/**/*.{js,ts}',
+    './plugins/**/*.{js,ts}',
+    './app.vue',
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          50: '#f8fafc',
+          100: '#f1f5f9',
+          200: '#e2e8f0',
+          300: '#cbd5e1',
+          400: '#94a3b8',
+          500: '#64748b',
+          600: '#475569',
+          700: '#334155',
+          800: '#1e293b',
+          900: '#0f172a',
+          950: '#020617',
+        },
+        accent: {
+          50: '#faf5ff',
+          100: '#f3e8ff',
+          200: '#e9d5ff',
+          300: '#d8b4fe',
+          400: '#c084fc',
+          500: '#a855f7',
+          600: '#9333ea',
+          700: '#7c3aed',
+          800: '#6B21A8',
+        },
+        success: { 500: '#10b981', 600: '#059669', 700: '#047857' },
+        danger: { 500: '#ef4444', 600: '#DC2626', 700: '#b91c1c' },
+        warning: { 500: '#f59e0b', 600: '#d97706', 700: '#b45309' },
+      },
+      fontFamily: {
+        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+        heading: ['Plus Jakarta Sans', 'sans-serif'],
+        body: ['Plus Jakarta Sans', 'sans-serif'],
+      },
+      boxShadow: {
+        'card': '0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04)',
+      },
+    },
+  },
+  plugins: [],
+}
