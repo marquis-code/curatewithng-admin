@@ -64,7 +64,7 @@
 
               <button type="submit" :disabled="loading" class="w-full flex justify-center items-center gap-2 py-3.5 mt-2 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition-colors">
                 <Loader2 v-if="loading" class="w-5 h-5 animate-spin" />
-                <span v-else>Continue securely</span>
+                <span v-else>Login</span>
                 <ArrowRight v-if="!loading" class="w-4 h-4 ml-1" />
               </button>
             </form>
@@ -75,8 +75,8 @@
             <div class="w-12 h-12 bg-slate-100 text-slate-700 rounded-xl flex items-center justify-center mb-6">
               <KeyRound class="w-6 h-6" />
             </div>
-            <h1 class="text-3xl font-heading font-extrabold text-slate-900 mb-2">Two-Factor Auth</h1>
-            <p class="text-slate-500 text-base mb-10">We've sent a 6-digit code to <strong>{{ email }}</strong></p>
+            <h1 class="text-3xl text-center font-heading font-extrabold text-slate-900 mb-2">Two-Factor Auth</h1>
+            <p class="text-slate-500 text-center text-base mb-10">We've sent a 6-digit code to <strong>{{ email }}</strong></p>
 
             <form @submit.prevent="handleVerifyOTP" class="space-y-6">
               <div>
@@ -103,8 +103,17 @@
               </button>
             </form>
 
-            <div class="mt-8">
-              <button @click="step = 'credentials'" type="button" class="text-sm text-slate-500 hover:text-slate-900 font-semibold transition-colors flex items-center gap-1">
+            <p class="text-slate-500 text-center text-sm mt-8">
+              Didn't receive the code? 
+              <button @click="handleResendOtp" :disabled="resendLoading || resendCooldown > 0" class="font-semibold transition-colors disabled:opacity-50" :class="resendCooldown > 0 ? 'text-slate-400 cursor-not-allowed' : 'text-slate-900 hover:text-slate-700 hover:underline'">
+                <span v-if="resendLoading">Sending...</span>
+                <span v-else-if="resendCooldown > 0">Resend in {{ resendCooldown }}s</span>
+                <span v-else>Resend OTP</span>
+              </button>
+            </p>
+
+            <div class="mt-6 text-center">
+              <button @click="step = 'credentials'" type="button" class="text-sm text-slate-500 hover:text-slate-900 font-semibold transition-colors flex justify-center items-center gap-1 w-full">
                 &larr; Back to login
               </button>
             </div>
@@ -158,6 +167,20 @@ const otp = computed(() => otpDigits.value.join(''));
 const loading = ref(false);
 const step = ref<'credentials' | 'otp'>('credentials');
 const notification = ref('');
+const resendLoading = ref(false);
+const resendCooldown = ref(0);
+let resendTimer: ReturnType<typeof setInterval> | null = null;
+
+const startCooldown = () => {
+  resendCooldown.value = 60;
+  if (resendTimer) clearInterval(resendTimer);
+  resendTimer = setInterval(() => {
+    resendCooldown.value--;
+    if (resendCooldown.value <= 0) {
+      if (resendTimer) clearInterval(resendTimer);
+    }
+  }, 1000);
+};
 
 const showNotification = (msg: string) => {
   notification.value = msg;
@@ -209,6 +232,7 @@ const handleLogin = async () => {
     if (response && response.requiresOtp) {
       showNotification('Verification code sent to your email.');
       step.value = 'otp';
+      startCooldown();
     } else {
       // If no OTP required, directly go to dashboard
       navigateTo('/dashboard');
@@ -217,6 +241,24 @@ const handleLogin = async () => {
     toast.error(e.response?.data?.message || e.message || 'Login failed. Please check your credentials.');
   } finally {
     loading.value = false;
+  }
+};
+
+const handleResendOtp = async () => {
+  if (resendCooldown.value > 0) return;
+  resendLoading.value = true;
+  try {
+    const response = await login({ email: email.value, password: password.value });
+    if (response && response.requiresOtp) {
+      showNotification('A new verification code has been sent to your email.');
+      startCooldown();
+      otpDigits.value = ['', '', '', '', '', ''];
+      otpInputs.value[0]?.focus();
+    }
+  } catch (e: any) {
+    toast.error('Failed to resend OTP. Please try logging in again.');
+  } finally {
+    resendLoading.value = false;
   }
 };
 
