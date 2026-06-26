@@ -1,8 +1,8 @@
 <template>
   <div>
-    <div class="flex justify-between items-center mb-8">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
       <div>
-        <h1 class="text-3xl font-heading font-bold text-slate-900 mb-1">Sourcing Requests</h1>
+        <h1 class="text-2xl md:text-3xl font-heading font-bold text-slate-900 mb-1">Sourcing Requests</h1>
         <p class="text-slate-500">Manage bespoke gift requests and send quotes</p>
       </div>
     </div>
@@ -26,20 +26,25 @@
 
     <div class="card overflow-hidden">
       <!-- Toolbar -->
-      <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+      <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50">
         <div class="relative w-full max-w-sm">
           <input type="text" v-model="searchQuery" placeholder="Search by idea or contact name..." class="input-field !py-2 w-full pl-10" />
           <Search class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
         </div>
-        <select v-model="statusFilter" class="input-field !py-2 !w-48">
-          <option value="">All Statuses</option>
-          <option value="PENDING">Pending</option>
-          <option value="QUOTED">Quoted</option>
-          <option value="PAYMENT_RECEIVED">Payment Received</option>
-          <option value="SOURCING">Sourcing</option>
-          <option value="FULFILLED">Fulfilled</option>
-          <option value="CANCELLED">Cancelled</option>
-        </select>
+        <CustomSelect 
+          v-model="statusFilter" 
+          :options="[
+            { label: 'All Statuses', value: '' },
+            { label: 'Pending', value: 'PENDING' },
+            { label: 'Quoted', value: 'QUOTED' },
+            { label: 'Payment Received', value: 'PAYMENT_RECEIVED' },
+            { label: 'Sourcing', value: 'SOURCING' },
+            { label: 'Fulfilled', value: 'FULFILLED' },
+            { label: 'Cancelled', value: 'CANCELLED' }
+          ]"
+          placeholder="All Statuses"
+          class="w-full sm:w-48"
+        />
       </div>
 
       <!-- Table -->
@@ -69,8 +74,11 @@
             </tr>
             <tr v-else v-for="req in filteredRequests" :key="req._id" class="border-b border-slate-100 bg-white hover:bg-slate-50 transition-colors">
               <td class="p-4">
-                <div class="font-medium text-slate-900">{{ req.giftIdea }}</div>
-                <div class="text-xs text-slate-500">{{ req.occasion || 'Unspecified Occasion' }} • {{ req.timeline }}</div>
+                <div class="font-medium text-slate-900 flex items-center gap-2">
+                  {{ req.giftIdea }}
+                  <span v-if="req.requestCount > 1" class="bg-primary-50 border border-primary-200 text-primary-700 text-[10px] px-1.5 py-0.5 rounded font-bold">{{ req.requestCount }} requests</span>
+                </div>
+                <div class="text-xs text-slate-500 capitalize">{{ req.occasion || 'Unspecified' }} • {{ req.timeline }}</div>
               </td>
               <td class="p-4">
                 <div class="text-sm font-medium text-slate-700">{{ req.contactName }}</div>
@@ -79,7 +87,10 @@
               <td class="p-4 text-sm font-medium text-slate-700">
                 <span v-if="req.budgetSignal?.ideal">₦{{ req.budgetSignal.ideal.toLocaleString() }}</span>
                 <span v-else>N/A</span>
-                <span class="text-xs text-slate-400 font-normal block">{{ req.budgetSignal?.flexibility }}</span>
+                <div class="flex items-center gap-2 mt-0.5">
+                  <span class="text-xs text-slate-400 font-normal capitalize">{{ req.budgetSignal?.flexibility?.replace('_', ' ')?.toLowerCase() }}</span>
+                  <span v-if="req.isAboveUserBudget" class="text-[9px] bg-amber-50 text-amber-600 px-1 py-0.5 rounded border border-amber-200 font-bold" title="Above user's stored budget">ABOVE</span>
+                </div>
               </td>
               <td class="p-4">
                 <span :class="getStatusBadge(req.status)">
@@ -109,16 +120,30 @@
           <span :class="getStatusBadge(selectedRequest.status)">{{ selectedRequest.status }}</span>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
-            <div class="text-xs text-slate-400 font-medium mb-1 uppercase tracking-wider">Ideal Budget</div>
-            <div class="font-bold text-slate-900" v-if="selectedRequest.budgetSignal?.ideal">₦{{ selectedRequest.budgetSignal.ideal.toLocaleString() }}</div>
-            <div class="text-xs text-slate-500 mt-1">{{ selectedRequest.budgetSignal?.flexibility }}</div>
+            <div class="text-xs text-slate-400 font-medium mb-1 uppercase tracking-wider">Recipient Profile</div>
+            <div class="font-bold text-slate-900 capitalize">{{ selectedRequest.recipientProfile?.relationship || 'Unknown' }} <span class="text-slate-500 font-normal ml-1" v-if="selectedRequest.recipientProfile?.age">({{ selectedRequest.recipientProfile?.age }}, {{ selectedRequest.recipientProfile?.gender }})</span></div>
+            <div class="flex flex-wrap gap-1 mt-2" v-if="selectedRequest.recipientProfile?.interests?.length">
+              <span v-for="int in selectedRequest.recipientProfile.interests" :key="int" class="bg-white border border-slate-200 px-2 py-0.5 rounded text-[10px] font-medium text-slate-600">
+                {{ int }}
+              </span>
+            </div>
           </div>
-          <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
-            <div class="text-xs text-slate-400 font-medium mb-1 uppercase tracking-wider">Timeline</div>
-            <div class="font-bold text-slate-900">{{ selectedRequest.timeline }}</div>
+
+          <div class="space-y-4">
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+              <div class="text-xs text-slate-400 font-medium mb-1 uppercase tracking-wider">Ideal Budget</div>
+              <div class="font-bold text-slate-900" v-if="selectedRequest.budgetSignal?.ideal">₦{{ selectedRequest.budgetSignal.ideal.toLocaleString() }}</div>
+              <div class="text-xs text-slate-500 mt-1 capitalize">{{ selectedRequest.budgetSignal?.flexibility?.replace('_', ' ')?.toLowerCase() }}</div>
+              <div v-if="selectedRequest.isAboveUserBudget" class="text-[10px] text-amber-600 font-bold bg-amber-50 px-2 py-0.5 rounded mt-2 inline-block">ABOVE BUDGET</div>
+            </div>
           </div>
+        </div>
+
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+          <div class="text-xs text-slate-400 font-medium mb-1 uppercase tracking-wider">Timeline & Occasion</div>
+          <div class="font-bold text-slate-900 capitalize">{{ selectedRequest.occasion || 'Unspecified' }} <span class="text-slate-500 font-normal ml-2">({{ selectedRequest.timeline }})</span></div>
         </div>
 
         <div>
@@ -127,9 +152,8 @@
             <div><span class="font-medium text-slate-900">Name:</span> {{ selectedRequest.contactName }}</div>
             <div><span class="font-medium text-slate-900">Email:</span> {{ selectedRequest.contactEmail }}</div>
             <div><span class="font-medium text-slate-900">Phone:</span> {{ selectedRequest.contactPhone }}</div>
-            <div v-if="selectedRequest.additionalNotes" class="pt-2 mt-2 border-t border-slate-200">
-              <span class="font-medium text-slate-900 block mb-1">Notes:</span> 
-              {{ selectedRequest.additionalNotes }}
+            <div v-if="selectedRequest.additionalNotes" class="pt-3 mt-3 border-t border-slate-200 text-slate-700 italic">
+              "{{ selectedRequest.additionalNotes }}"
             </div>
           </div>
         </div>

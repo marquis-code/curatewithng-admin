@@ -2,7 +2,7 @@
   <div>
     <div class="flex justify-between items-center mb-8">
       <div>
-        <h1 class="text-3xl font-heading font-bold text-slate-900 mb-1">Dashboard</h1>
+        <h1 class="text-2xl md:text-3xl font-heading font-bold text-slate-900 mb-1">Dashboard</h1>
         <p class="text-slate-500">Platform overview and metrics</p>
       </div>
     </div>
@@ -15,7 +15,7 @@
         <div class="flex justify-between items-start mb-4 relative z-10">
           <div>
             <div class="text-slate-500 text-xs font-bold tracking-wider uppercase mb-1">Total Users</div>
-            <div class="text-3xl font-heading font-extrabold text-slate-900">
+            <div class="text-2xl md:text-3xl font-heading font-extrabold text-slate-900">
               <span v-if="usersLoading" class="animate-pulse bg-slate-200 text-transparent rounded">0000</span>
               <span v-else>{{ userStats?.total || users.length || 0 }}</span>
             </div>
@@ -33,7 +33,7 @@
         <div class="flex justify-between items-start mb-4 relative z-10">
           <div>
             <div class="text-slate-500 text-xs font-bold tracking-wider uppercase mb-1">Active Vendors</div>
-            <div class="text-3xl font-heading font-extrabold text-slate-900">
+            <div class="text-2xl md:text-3xl font-heading font-extrabold text-slate-900">
               <span v-if="vendorsLoading" class="animate-pulse bg-slate-200 text-transparent rounded">000</span>
               <span v-else>{{ vendorStats?.total || vendors.length || 0 }}</span>
             </div>
@@ -51,7 +51,7 @@
         <div class="flex justify-between items-start mb-4 relative z-10">
           <div>
             <div class="text-slate-500 text-xs font-bold tracking-wider uppercase mb-1">Total Orders</div>
-            <div class="text-3xl font-heading font-extrabold text-slate-900">
+            <div class="text-2xl md:text-3xl font-heading font-extrabold text-slate-900">
               <span v-if="ordersLoading" class="animate-pulse bg-slate-200 text-transparent rounded">0000</span>
               <span v-else>{{ orderStats?.totalOrders || orders.length || 0 }}</span>
             </div>
@@ -69,7 +69,7 @@
         <div class="flex justify-between items-start mb-4 relative z-10">
           <div>
             <div class="text-slate-500 text-xs font-bold tracking-wider uppercase mb-1">AI Curations</div>
-            <div class="text-3xl font-heading font-extrabold text-slate-900">
+            <div class="text-2xl md:text-3xl font-heading font-extrabold text-slate-900">
               <span v-if="aiLoading" class="animate-pulse bg-slate-200 text-transparent rounded">0000</span>
               <span v-else>{{ aiStats?.total || aiLogs.length || 0 }}</span>
             </div>

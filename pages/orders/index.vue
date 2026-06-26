@@ -1,27 +1,32 @@
 <template>
   <div>
-    <div class="flex justify-between items-center mb-8">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
       <div>
-        <h1 class="text-3xl font-heading font-bold text-slate-900 mb-1">Orders</h1>
+        <h1 class="text-2xl md:text-3xl font-heading font-bold text-slate-900 mb-1">Orders</h1>
         <p class="text-slate-500">Monitor platform transactions</p>
       </div>
     </div>
 
     <div class="card overflow-hidden bg-white border border-slate-200 shadow-sm rounded-xl">
       <!-- Toolbar -->
-      <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+      <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50">
         <div class="relative w-full max-w-sm">
           <input type="text" v-model="searchQuery" placeholder="Search orders by ID..." class="input-field !py-2 w-full pl-10 bg-white" />
           <Search class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
         </div>
-        <select v-model="statusFilter" class="input-field !py-2 !w-48 bg-white">
-          <option value="">All Statuses</option>
-          <option value="PENDING">Pending</option>
-          <option value="PROCESSING">Processing</option>
-          <option value="SHIPPED">Shipped</option>
-          <option value="DELIVERED">Delivered</option>
-          <option value="CANCELLED">Cancelled</option>
-        </select>
+        <CustomSelect 
+          v-model="statusFilter" 
+          :options="[
+            { label: 'All Statuses', value: '' },
+            { label: 'Pending', value: 'PENDING' },
+            { label: 'Processing', value: 'PROCESSING' },
+            { label: 'Shipped', value: 'SHIPPED' },
+            { label: 'Delivered', value: 'DELIVERED' },
+            { label: 'Cancelled', value: 'CANCELLED' }
+          ]"
+          placeholder="All Statuses"
+          class="w-full sm:w-48"
+        />
       </div>
 
       <!-- Table -->

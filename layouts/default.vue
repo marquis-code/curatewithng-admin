@@ -58,9 +58,9 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 md:ml-64 flex flex-col min-h-screen">
+    <main class="flex-1 md:ml-64 flex flex-col min-h-screen min-w-0">
       <!-- Topbar -->
-      <header class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 md:px-8 sticky top-0 z-10">
+      <header class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-3 md:px-6 sticky top-0 z-10">
         <div class="flex items-center gap-3">
           <button class="md:hidden text-slate-600 hover:text-slate-900" @click="sidebarOpen = true">
             <Menu class="w-6 h-6" />
@@ -69,7 +69,7 @@
         </div>
         <div class="flex items-center gap-4">
           <!-- Notification bell -->
-          <button class="relative w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-colors">
+          <button @click="toggleNotifications" class="relative w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-colors">
             <Bell class="w-4 h-4" />
             <span v-if="unreadCount > 0" class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold">
               {{ unreadCount }}
@@ -79,7 +79,7 @@
       </header>
 
       <!-- Page Content -->
-      <div class="flex-1 p-4 md:p-8 overflow-x-hidden">
+      <div class="flex-1 p-2 md:p-6 overflow-x-hidden w-full">
         <slot />
       </div>
     </main>
@@ -104,6 +104,47 @@
       </div>
     </div>
 
+    <!-- Notifications Drawer -->
+    <FloatingDrawer v-model="notificationsOpen" title="Notifications">
+      <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
+        <h3 class="font-bold text-slate-900">Recent Alerts</h3>
+        <button v-if="unreadCount > 0" @click="markAllAsRead" class="text-xs text-primary-600 font-medium hover:text-primary-700">
+          Mark all as read
+        </button>
+      </div>
+      
+      <div v-if="loading" class="space-y-4 py-4">
+         <div v-for="i in 3" :key="i" class="animate-pulse flex gap-3">
+            <div class="w-10 h-10 bg-slate-200 rounded-full"></div>
+            <div class="flex-1 space-y-2 py-1">
+               <div class="h-4 bg-slate-200 rounded w-3/4"></div>
+               <div class="h-3 bg-slate-200 rounded w-5/6"></div>
+            </div>
+         </div>
+      </div>
+
+      <div v-else-if="notifications.length === 0" class="text-center py-10 text-slate-500">
+         <Bell class="w-10 h-10 mx-auto text-slate-300 mb-2" />
+         <p class="text-sm">You have no notifications yet.</p>
+      </div>
+
+      <div v-else class="space-y-3">
+         <div v-for="notif in notifications" :key="notif._id" 
+              class="p-4 rounded-xl border transition-colors cursor-pointer"
+              :class="notif.isRead ? 'bg-white border-slate-100 shadow-sm' : 'bg-primary-50 border-primary-100 shadow-sm'"
+              @click="markAsRead(notif._id)">
+            <div class="flex justify-between items-start mb-1">
+               <div class="font-bold text-sm text-slate-900 flex items-center gap-2">
+                  <span v-if="!notif.isRead" class="w-2 h-2 rounded-full bg-primary-500"></span>
+                  {{ notif.title }}
+               </div>
+               <span class="text-[10px] text-slate-400 font-mono">{{ new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
+            </div>
+            <p class="text-xs text-slate-600 ml-4">{{ notif.body }}</p>
+         </div>
+      </div>
+    </FloatingDrawer>
+
   </div>
 </template>
 
@@ -112,12 +153,21 @@ import { onMounted, watch } from 'vue';
 import { useUser } from '~/composables/modules/auth/user';
 import { useNotifications } from '~/composables/modules/notifications/useNotifications';
 import { LayoutDashboard, Users, Store, Gift, Package, CreditCard, Brain, Settings, Bell, Menu, X, LogOut } from 'lucide-vue-next';
+import FloatingDrawer from '~/components/ui/FloatingDrawer.vue';
 
 const { user, logOut } = useUser();
-const { unreadCount, connectSocket, disconnectSocket, fetchUnreadCount } = useNotifications();
+const { unreadCount, notifications, loading, connectSocket, disconnectSocket, fetchUnreadCount, fetchNotifications, markAsRead, markAllAsRead } = useNotifications();
 
 const sidebarOpen = ref(false);
 const showSignOutModal = ref(false);
+const notificationsOpen = ref(false);
+
+const toggleNotifications = () => {
+  notificationsOpen.value = true;
+  if (notifications.value.length === 0) {
+    fetchNotifications();
+  }
+};
 
 onMounted(() => {
   if (user.value) {

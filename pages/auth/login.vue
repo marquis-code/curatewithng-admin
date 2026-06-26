@@ -34,8 +34,8 @@
         <transition name="slide-fade" mode="out-in">
           <!-- Step 1: Login Credentials -->
           <div v-if="step === 'credentials'" key="credentials">
-            <h1 class="text-3xl font-heading font-extrabold text-slate-900 mb-2">Secure Login</h1>
-            <p class="text-slate-500 text-base mb-10">Enter your credentials to access the command center.</p>
+            <h1 class="text-2xl md:text-3xl text-center font-heading font-extrabold text-slate-900 mb-2">Secure Login</h1>
+            <p class="text-slate-500 text-center text-base mb-10">Enter your credentials to access the command center.</p>
 
             <form @submit.prevent="handleLogin" class="space-y-6">
               <UiCustomInput

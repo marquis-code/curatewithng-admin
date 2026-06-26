@@ -1,26 +1,31 @@
 <template>
   <div>
-    <div class="flex justify-between items-center mb-8">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
       <div>
-        <h1 class="text-3xl font-heading font-bold text-slate-900 mb-1">Vendors</h1>
+        <h1 class="text-2xl md:text-3xl font-heading font-bold text-slate-900 mb-1">Vendors</h1>
         <p class="text-slate-500">Manage platform vendors and approvals</p>
       </div>
     </div>
 
     <div class="card overflow-hidden">
       <!-- Toolbar -->
-      <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+      <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50">
         <div class="relative w-full max-w-sm">
           <input type="text" v-model="searchQuery" placeholder="Search vendors by business name..." class="input-field !py-2 w-full pl-10" />
           <Search class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
         </div>
-        <select v-model="statusFilter" class="input-field !py-2 !w-48">
-          <option value="">All Statuses</option>
-          <option value="APPROVED">Approved</option>
-          <option value="PENDING">Pending</option>
-          <option value="REJECTED">Rejected</option>
-          <option value="SUSPENDED">Suspended</option>
-        </select>
+        <CustomSelect 
+          v-model="statusFilter" 
+          :options="[
+            { label: 'All Statuses', value: '' },
+            { label: 'Approved', value: 'APPROVED' },
+            { label: 'Pending', value: 'PENDING' },
+            { label: 'Rejected', value: 'REJECTED' },
+            { label: 'Suspended', value: 'SUSPENDED' }
+          ]"
+          placeholder="All Statuses"
+          class="w-full sm:w-48"
+        />
       </div>
 
       <!-- Table -->
@@ -139,12 +144,12 @@
         
         <div class="pt-4 border-t border-slate-100 space-y-3" v-if="!selectedVendor.isApproved">
           <h5 class="text-sm font-bold text-slate-900 mb-4">Approval Actions</h5>
-          <button @click="handleApprove" :disabled="actionLoading" class="w-full btn-primary py-3 flex justify-center items-center gap-2">
+          <button @click="confirmApprove = true" :disabled="actionLoading" class="w-full btn-primary py-3 flex justify-center items-center gap-2">
             <CheckCircle class="w-5 h-5" />
             <span v-if="actionLoading">Processing...</span>
             <span v-else>Approve Vendor</span>
           </button>
-          <button @click="handleReject" :disabled="actionLoading" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-danger-600 font-medium hover:bg-danger-50 transition-colors flex justify-center items-center gap-2">
+          <button @click="confirmReject = true" :disabled="actionLoading" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-danger-600 font-medium hover:bg-danger-50 transition-colors flex justify-center items-center gap-2">
             <XCircle class="w-5 h-5" />
             <span v-if="actionLoading">Processing...</span>
             <span v-else>Reject Vendor</span>
@@ -152,6 +157,28 @@
         </div>
       </div>
     </FloatingDrawer>
+
+    <ConfirmModal
+      :isOpen="confirmApprove"
+      title="Approve Vendor"
+      message="Are you sure you want to approve this vendor? They will be able to list gifts on the platform."
+      confirmText="Approve"
+      type="info"
+      :loading="actionLoading"
+      @confirm="executeApprove"
+      @cancel="confirmApprove = false"
+    />
+
+    <ConfirmModal
+      :isOpen="confirmReject"
+      title="Reject Vendor"
+      message="Are you sure you want to reject this vendor? This action cannot be undone easily."
+      confirmText="Reject"
+      type="danger"
+      :loading="actionLoading"
+      @confirm="executeReject"
+      @cancel="confirmReject = false"
+    />
   </div>
 </template>
 
@@ -159,6 +186,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { Search, CheckCircle, XCircle } from 'lucide-vue-next';
 import FloatingDrawer from '~/components/ui/FloatingDrawer.vue';
+import ConfirmModal from '~/components/ui/ConfirmModal.vue';
 import { useFetchVendors } from '~/composables/modules/vendors/useFetchVendors';
 
 definePageMeta({ middleware: 'auth' });
@@ -196,17 +224,22 @@ const openVendorDrawer = (vendor: any) => {
   drawerOpen.value = true;
 };
 
-const handleApprove = async () => {
+const confirmApprove = ref(false);
+const confirmReject = ref(false);
+
+const executeApprove = async () => {
   if (selectedVendor.value) {
     await approveVendor(selectedVendor.value._id);
     selectedVendor.value.isApproved = true;
+    confirmApprove.value = false;
   }
 };
 
-const handleReject = async () => {
+const executeReject = async () => {
   if (selectedVendor.value) {
     await rejectVendor(selectedVendor.value._id);
     selectedVendor.value.isApproved = false;
+    confirmReject.value = false;
     drawerOpen.value = false;
   }
 };

@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-4xl mx-auto">
     <div class="mb-8">
-      <h1 class="text-3xl font-heading font-bold text-slate-900 tracking-tight">Platform Settings</h1>
+      <h1 class="text-2xl md:text-3xl font-heading font-bold text-slate-900 tracking-tight">Platform Settings</h1>
       <p class="text-slate-500 mt-1">Configure global application parameters.</p>
     </div>
 
@@ -40,24 +40,24 @@
             </button>
           </div>
           <div class="space-y-4">
-            <div v-for="(tier, index) in form.sourcingFeeTiers" :key="index" class="flex items-start gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
-              <div class="grid grid-cols-3 gap-4 flex-1">
+            <div v-for="(tier, index) in form.sourcingFeeTiers" :key="index" class="relative p-4 bg-slate-50 rounded-xl border border-slate-200">
+              <button @click="removeTier(index)" class="absolute top-2 right-2 p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Remove Tier">
+                <Trash2 class="w-4 h-4" />
+              </button>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 sm:pt-0 sm:pr-10">
                 <div>
                   <label class="block text-xs font-semibold text-slate-500 mb-1">Min Amount (₦)</label>
-                  <input type="number" v-model="tier.minAmount" class="input-field !py-2" />
+                  <input type="number" v-model="tier.minAmount" class="input-field !py-2 w-full bg-white" />
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-slate-500 mb-1">Max Amount (₦) <span class="font-normal opacity-50">(optional)</span></label>
-                  <input type="number" v-model="tier.maxAmount" class="input-field !py-2" />
+                  <input type="number" v-model="tier.maxAmount" class="input-field !py-2 w-full bg-white" />
                 </div>
                 <div>
-                  <label class="block text-xs font-semibold text-slate-500 mb-1">Fee Percentage (%)</label>
-                  <input type="number" v-model="tier.percentage" class="input-field !py-2" />
+                  <label class="block text-xs font-semibold text-slate-500 mb-1">Fee (%)</label>
+                  <input type="number" v-model="tier.percentage" class="input-field !py-2 w-full bg-white" />
                 </div>
               </div>
-              <button @click="removeTier(index)" class="mt-6 p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                <Trash2 class="w-4 h-4" />
-              </button>
             </div>
             <p class="text-xs text-slate-500 mt-2">Tiers are evaluated from top to bottom. Make sure your fallback (e.g. Min 0, Max empty) is at the bottom.</p>
           </div>

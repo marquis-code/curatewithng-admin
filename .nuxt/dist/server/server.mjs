@@ -448,61 +448,61 @@ const _routes = [
     name: "auth-login",
     path: "/auth/login",
     meta: __nuxt_page_meta || {},
-    component: () => import("./_nuxt/login-C00gUUA1.js")
+    component: () => import("./_nuxt/login-CWKK0Rn7.js")
   },
   {
     name: "gifts",
     path: "/gifts",
     meta: { "middleware": "auth" },
-    component: () => import("./_nuxt/index-DUTHM_rk.js")
+    component: () => import("./_nuxt/index-8YGtIsfr.js")
   },
   {
     name: "users",
     path: "/users",
     meta: { "middleware": "auth" },
-    component: () => import("./_nuxt/index-Do9V0u9i.js")
+    component: () => import("./_nuxt/index-By9Ml9cy.js")
   },
   {
     name: "orders",
     path: "/orders",
     meta: { "middleware": "auth" },
-    component: () => import("./_nuxt/index-DEUdVMy1.js")
+    component: () => import("./_nuxt/index-DOdt6Knv.js")
   },
   {
     name: "ai-logs",
     path: "/ai-logs",
     meta: { "middleware": "auth" },
-    component: () => import("./_nuxt/index-BmChfYzR.js")
+    component: () => import("./_nuxt/index-DpXJJVCv.js")
   },
   {
     name: "payouts",
     path: "/payouts",
     meta: { "middleware": "auth" },
-    component: () => import("./_nuxt/index-Ds-GVwLd.js")
+    component: () => import("./_nuxt/index-D_P47Bmk.js")
   },
   {
     name: "vendors",
     path: "/vendors",
     meta: { "middleware": "auth" },
-    component: () => import("./_nuxt/index-GcDSSb0r.js")
+    component: () => import("./_nuxt/index-DOLN7U3m.js")
   },
   {
     name: "settings",
     path: "/settings",
     meta: { "middleware": "auth" },
-    component: () => import("./_nuxt/index-FQeSlV0d.js")
+    component: () => import("./_nuxt/index-fHaTLOVv.js")
   },
   {
     name: "dashboard",
     path: "/dashboard",
     meta: { "middleware": "auth" },
-    component: () => import("./_nuxt/index-V14dTnFH.js")
+    component: () => import("./_nuxt/index-hvm3lw_J.js")
   },
   {
     name: "sourcing-requests",
     path: "/sourcing-requests",
     meta: { "middleware": "auth" },
-    component: () => import("./_nuxt/index-LGLDdb-d.js")
+    component: () => import("./_nuxt/index-DFBwl-lA.js")
   }
 ];
 const _wrapInTransition = (props, children) => {
@@ -1055,7 +1055,7 @@ const plugins = [
   prerender_server_sqIxOBipVr4FbVMA9kqWL0wT8FPop6sKAXLVfifsJzk
 ];
 const layouts = {
-  default: defineAsyncComponent(() => import("./_nuxt/default-BeiLE4GY.js").then((m) => m.default || m))
+  default: defineAsyncComponent(() => import("./_nuxt/default-DKvgTCby.js").then((m) => m.default || m))
 };
 const routeRulesMatcher = _routeRulesMatcher;
 const LayoutLoader = defineComponent({

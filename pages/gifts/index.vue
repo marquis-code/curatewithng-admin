@@ -1,25 +1,31 @@
 <template>
   <div>
-    <div class="flex justify-between items-center mb-8">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
       <div>
-        <h1 class="text-3xl font-heading font-bold text-slate-900 mb-1">Gifts</h1>
+        <h1 class="text-2xl md:text-3xl font-heading font-bold text-slate-900 mb-1">Gifts</h1>
         <p class="text-slate-500">Manage platform gift listings</p>
       </div>
     </div>
 
     <div class="card overflow-hidden">
       <!-- Toolbar -->
-      <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+      <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50">
         <div class="relative w-full max-w-sm">
           <input type="text" v-model="searchQuery" placeholder="Search gifts by name..." class="input-field !py-2 w-full pl-10" />
           <Search class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
         </div>
-        <div class="flex gap-3">
-          <select v-model="statusFilter" class="input-field !py-2 !w-48">
-            <option value="">All Statuses</option>
-            <option value="APPROVED">Approved</option>
-            <option value="PENDING">Pending</option>
-          </select>
+        <div class="flex gap-3 w-full sm:w-auto">
+          <CustomSelect 
+            v-model="statusFilter" 
+            :options="[
+              { label: 'All Statuses', value: '' },
+              { label: 'Approved', value: 'APPROVED' },
+              { label: 'Pending', value: 'PENDING' },
+              { label: 'Rejected', value: 'REJECTED' }
+            ]"
+            placeholder="All Statuses"
+            class="w-full sm:w-48"
+          />
         </div>
       </div>
 
@@ -151,7 +157,7 @@
         <div class="pt-4 border-t border-slate-100 space-y-3">
           <h5 class="text-sm font-bold text-slate-900 mb-4">Gift Actions</h5>
           
-          <button v-if="!selectedGift.isApproved" @click="handleApprove" :disabled="actionLoading" class="w-full btn-primary py-3 flex justify-center items-center gap-2">
+          <button v-if="!selectedGift.isApproved" @click="confirmApprove = true" :disabled="actionLoading" class="w-full btn-primary py-3 flex justify-center items-center gap-2">
             <CheckCircle class="w-5 h-5" />
             <span v-if="actionLoading">Processing...</span>
             <span v-else>Approve Gift</span>
@@ -163,7 +169,7 @@
             <span v-else>{{ selectedGift.isFeatured ? 'Remove Feature' : 'Feature Gift' }}</span>
           </button>
           
-          <button @click="handleDelete" :disabled="actionLoading" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-danger-600 font-medium hover:bg-danger-50 transition-colors flex justify-center items-center gap-2">
+          <button @click="confirmDelete = true" :disabled="actionLoading" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-danger-600 font-medium hover:bg-danger-50 transition-colors flex justify-center items-center gap-2">
             <Trash2 class="w-5 h-5" />
             <span v-if="actionLoading">Processing...</span>
             <span v-else>Delete Gift</span>
@@ -171,6 +177,28 @@
         </div>
       </div>
     </FloatingDrawer>
+
+    <ConfirmModal
+      :isOpen="confirmApprove"
+      title="Approve Gift"
+      message="Are you sure you want to approve this gift? It will become visible and available for purchase."
+      confirmText="Approve"
+      type="info"
+      :loading="actionLoading"
+      @confirm="executeApprove"
+      @cancel="confirmApprove = false"
+    />
+
+    <ConfirmModal
+      :isOpen="confirmDelete"
+      title="Delete Gift"
+      message="Are you sure you want to completely delete this gift? This action cannot be undone."
+      confirmText="Delete"
+      type="danger"
+      :loading="actionLoading"
+      @confirm="executeDelete"
+      @cancel="confirmDelete = false"
+    />
   </div>
 </template>
 
@@ -178,6 +206,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { Search, Image, CheckCircle, Star, Trash2 } from 'lucide-vue-next';
 import FloatingDrawer from '~/components/ui/FloatingDrawer.vue';
+import ConfirmModal from '~/components/ui/ConfirmModal.vue';
 import { useFetchGifts } from '~/composables/modules/gifts/useFetchGifts';
 
 definePageMeta({ middleware: 'auth' });
@@ -210,10 +239,14 @@ const openGiftDrawer = (gift: any) => {
   drawerOpen.value = true;
 };
 
-const handleApprove = async () => {
+const confirmApprove = ref(false);
+const confirmDelete = ref(false);
+
+const executeApprove = async () => {
   if (selectedGift.value) {
     await approveGift(selectedGift.value._id);
     selectedGift.value.isApproved = true;
+    confirmApprove.value = false;
   }
 };
 
@@ -224,9 +257,10 @@ const handleFeature = async () => {
   }
 };
 
-const handleDelete = async () => {
-  if (selectedGift.value && confirm('Are you sure you want to delete this gift?')) {
+const executeDelete = async () => {
+  if (selectedGift.value) {
     await deleteGift(selectedGift.value._id);
+    confirmDelete.value = false;
     drawerOpen.value = false;
   }
 };

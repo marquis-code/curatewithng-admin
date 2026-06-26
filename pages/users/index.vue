@@ -1,17 +1,27 @@
 <template>
   <div>
-    <div class="flex justify-between items-center mb-8">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
       <div>
-        <h1 class="text-3xl font-heading font-bold text-slate-900 mb-1">Users</h1>
+        <h1 class="text-2xl md:text-3xl font-heading font-bold text-slate-900 mb-1">Users</h1>
         <p class="text-slate-500">Manage platform users (buyers)</p>
       </div>
     </div>
 
     <div class="card overflow-hidden">
       <!-- Toolbar -->
-      <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+      <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50">
         <div class="relative w-full max-w-sm">
           <input type="text" v-model="searchQuery" placeholder="Search users by email or name..." class="input-field !py-2 w-full pl-10" />
+          <CustomSelect 
+            v-model="roleFilter" 
+            :options="[
+              { label: 'All Roles', value: '' },
+              { label: 'Users', value: 'user' },
+              { label: 'Admins', value: 'admin' }
+            ]"
+            placeholder="All Roles"
+            class="w-full sm:w-48"
+          />
           <Search class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
         </div>
       </div>
@@ -128,7 +138,7 @@
         
         <div class="pt-4 border-t border-slate-100">
           <h5 class="text-sm font-bold text-slate-900 mb-4">Quick Actions</h5>
-          <button @click="handleToggleStatus" class="w-full flex justify-between items-center p-4 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors">
+          <button @click="confirmStatusToggle = true" class="w-full flex justify-between items-center p-4 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors">
             <div class="flex items-center gap-3">
               <div :class="selectedUser.isActive ? 'bg-amber-50 text-amber-600' : 'bg-success-50 text-success-600'" class="w-10 h-10 rounded-full flex items-center justify-center">
                 <Power class="w-5 h-5" />
@@ -142,6 +152,17 @@
         </div>
       </div>
     </FloatingDrawer>
+
+    <ConfirmModal
+      :isOpen="confirmStatusToggle"
+      :title="selectedUser?.isActive ? 'Deactivate User' : 'Activate User'"
+      :message="selectedUser?.isActive ? 'Are you sure you want to deactivate this user? They will not be able to log in or use the platform.' : 'Are you sure you want to activate this user? They will regain access to the platform.'"
+      :confirmText="selectedUser?.isActive ? 'Deactivate' : 'Activate'"
+      :type="selectedUser?.isActive ? 'danger' : 'info'"
+      :loading="isActionLoading"
+      @confirm="executeToggleStatus"
+      @cancel="confirmStatusToggle = false"
+    />
   </div>
 </template>
 
@@ -149,6 +170,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { Search, Power } from 'lucide-vue-next';
 import FloatingDrawer from '~/components/ui/FloatingDrawer.vue';
+import ConfirmModal from '~/components/ui/ConfirmModal.vue';
 import { useFetchUsers } from '~/composables/modules/users/useFetchUsers';
 
 definePageMeta({ middleware: 'auth' });
@@ -175,10 +197,19 @@ const openUserDrawer = (user: any) => {
   drawerOpen.value = true;
 };
 
-const handleToggleStatus = async () => {
+const confirmStatusToggle = ref(false);
+const isActionLoading = ref(false);
+
+const executeToggleStatus = async () => {
   if (selectedUser.value) {
-    await toggleUserStatus(selectedUser.value._id);
-    selectedUser.value.isActive = !selectedUser.value.isActive;
+    isActionLoading.value = true;
+    try {
+      await toggleUserStatus(selectedUser.value._id);
+      selectedUser.value.isActive = !selectedUser.value.isActive;
+      confirmStatusToggle.value = false;
+    } finally {
+      isActionLoading.value = false;
+    }
   }
 };
 

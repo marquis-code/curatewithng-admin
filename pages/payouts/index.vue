@@ -1,25 +1,30 @@
 <template>
   <div>
-    <div class="flex justify-between items-center mb-8">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
       <div>
-        <h1 class="text-3xl font-heading font-bold text-slate-900 mb-1">Payouts</h1>
+        <h1 class="text-2xl md:text-3xl font-heading font-bold text-slate-900 mb-1">Payouts</h1>
         <p class="text-slate-500">Manage vendor withdrawal requests</p>
       </div>
     </div>
 
     <div class="card overflow-hidden">
       <!-- Toolbar -->
-      <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+      <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50">
         <div class="relative w-full max-w-sm">
           <input type="text" v-model="searchQuery" placeholder="Search payouts by vendor..." class="input-field !py-2 w-full pl-10" />
           <Search class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
         </div>
-        <select v-model="statusFilter" class="input-field !py-2 !w-48">
-          <option value="">All Statuses</option>
-          <option value="PENDING">Pending</option>
-          <option value="COMPLETED">Completed</option>
-          <option value="REJECTED">Rejected</option>
-        </select>
+        <CustomSelect 
+          v-model="statusFilter" 
+          :options="[
+            { label: 'All Statuses', value: '' },
+            { label: 'Pending', value: 'PENDING' },
+            { label: 'Completed', value: 'COMPLETED' },
+            { label: 'Rejected', value: 'REJECTED' }
+          ]"
+          placeholder="All Statuses"
+          class="w-full sm:w-48"
+        />
       </div>
 
       <!-- Table -->
@@ -99,12 +104,12 @@
 
         <div class="pt-4 border-t border-slate-100 space-y-3" v-if="selectedPayout.status === 'PENDING'">
           <h5 class="text-sm font-bold text-slate-900 mb-4">Payout Actions</h5>
-          <button @click="handleApprove" :disabled="actionLoading" class="w-full btn-primary py-3 flex justify-center items-center gap-2">
+          <button @click="confirmApprove = true" :disabled="actionLoading" class="w-full btn-primary py-3 flex justify-center items-center gap-2">
             <CheckCircle class="w-5 h-5" />
             <span v-if="actionLoading">Processing...</span>
             <span v-else>Approve Transfer</span>
           </button>
-          <button @click="handleReject" :disabled="actionLoading" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-danger-600 font-medium hover:bg-danger-50 transition-colors flex justify-center items-center gap-2">
+          <button @click="confirmReject = true" :disabled="actionLoading" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-danger-600 font-medium hover:bg-danger-50 transition-colors flex justify-center items-center gap-2">
             <XCircle class="w-5 h-5" />
             <span v-if="actionLoading">Processing...</span>
             <span v-else>Reject Request</span>
@@ -112,6 +117,28 @@
         </div>
       </div>
     </FloatingDrawer>
+
+    <ConfirmModal
+      :isOpen="confirmApprove"
+      title="Approve Payout"
+      message="Are you sure you want to approve this payout? Funds will be transferred to the vendor's bank account."
+      confirmText="Approve Payout"
+      type="info"
+      :loading="actionLoading"
+      @confirm="executeApprove"
+      @cancel="confirmApprove = false"
+    />
+
+    <ConfirmModal
+      :isOpen="confirmReject"
+      title="Reject Payout"
+      message="Are you sure you want to reject this payout request?"
+      confirmText="Reject Payout"
+      type="danger"
+      :loading="actionLoading"
+      @confirm="executeReject"
+      @cancel="confirmReject = false"
+    />
   </div>
 </template>
 
@@ -119,6 +146,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { Search, Building, CreditCard, User, CheckCircle, XCircle } from 'lucide-vue-next';
 import FloatingDrawer from '~/components/ui/FloatingDrawer.vue';
+import ConfirmModal from '~/components/ui/ConfirmModal.vue';
 import { GATEWAY_ENDPOINT_WITH_AUTH } from '~/api_factory/axios.config';
 import { useCustomToast } from '~/composables/core/useCustomToast';
 
@@ -167,7 +195,10 @@ const openPayoutDrawer = (payout: any) => {
   drawerOpen.value = true;
 };
 
-const handleApprove = async () => {
+const confirmApprove = ref(false);
+const confirmReject = ref(false);
+
+const executeApprove = async () => {
   if (selectedPayout.value) {
     actionLoading.value = true;
     try {
@@ -175,6 +206,7 @@ const handleApprove = async () => {
       showToast({ title: "Success", message: "Payout approved", toastType: "success" });
       selectedPayout.value.status = 'COMPLETED';
       await fetchPayouts();
+      confirmApprove.value = false;
       drawerOpen.value = false;
     } catch (error: any) {
       showToast({ title: "Error", message: error?.response?.data?.message || "Failed to approve", toastType: "error" });
@@ -184,7 +216,7 @@ const handleApprove = async () => {
   }
 };
 
-const handleReject = async () => {
+const executeReject = async () => {
   // Assuming there's a reject endpoint or logic
   if (selectedPayout.value) {
      actionLoading.value = true;
@@ -192,6 +224,7 @@ const handleReject = async () => {
        showToast({ title: "Success", message: "Payout rejected", toastType: "success" });
        selectedPayout.value.status = 'REJECTED';
        actionLoading.value = false;
+       confirmReject.value = false;
        drawerOpen.value = false;
      }, 1000);
   }
