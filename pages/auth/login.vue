@@ -2,7 +2,7 @@
   <div class="min-h-screen grid lg:grid-cols-2 bg-white">
     
     <!-- Left: Form Section -->
-    <div class="relative flex flex-col justify-center px-6 sm:px-16 lg:px-24 py-12">
+    <div class="relative flex flex-col justify-center px-4 sm:px-16 lg:px-24 py-12">
       <!-- Notification Toast (No shadow, flat design) -->
       <transition
         enter-active-class="transition duration-300 ease-out"
@@ -34,7 +34,7 @@
         <transition name="slide-fade" mode="out-in">
           <!-- Step 1: Login Credentials -->
           <div v-if="step === 'credentials'" key="credentials">
-            <h1 class="text-2xl md:text-3xl text-center font-heading font-extrabold text-slate-900 mb-2">Secure Login</h1>
+            <h1 class="text-2xl text-center font-heading font-extrabold text-slate-900 mb-2">Secure Login</h1>
             <p class="text-slate-500 text-center text-base mb-10">Enter your credentials to access the command center.</p>
 
             <form @submit.prevent="handleLogin" class="space-y-6">
@@ -73,9 +73,11 @@
           <!-- Step 2: OTP Verification -->
           <div v-else-if="step === 'otp'" key="otp">
             <div class="w-12 h-12 bg-slate-100 text-slate-700 rounded-xl flex items-center justify-center mb-6">
-              <KeyRound class="w-6 h-6" />
+              <div class="flex justify-center items-center">
+                <KeyRound class="w-6 h-6" />
+              </div>
             </div>
-            <h1 class="text-3xl text-center font-heading font-extrabold text-slate-900 mb-2">Two-Factor Auth</h1>
+            <h1 class="text-2xl text-center font-heading font-extrabold text-slate-900 mb-2">Two-Factor Auth</h1>
             <p class="text-slate-500 text-center text-base mb-10">We've sent a 6-digit code to <strong>{{ email }}</strong></p>
 
             <form @submit.prevent="handleVerifyOTP" class="space-y-6">

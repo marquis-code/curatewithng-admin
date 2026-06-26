@@ -1,0 +1,1 @@
+import{u as l}from"./dIwUHyoi.js";import"./RAUxIq_h.js";const i=()=>{const t=l("admin_user_data",{default:()=>null}),e=l("admin_token",{default:()=>null});return{user:t,token:e,logOut:()=>{t.value=null,e.value=null,window.location.href="/auth/login"},setUser:(o,u)=>{t.value=o,u&&(e.value=u)}}};export{i as u};
